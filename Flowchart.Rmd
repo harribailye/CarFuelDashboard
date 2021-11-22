@@ -1,0 +1,47 @@
+---
+title: "Flow Chart of Document Understanding "
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+pacman::p_load(DiagrammeR, tidyverse, DiagrammeRsvg, rsvg)
+```
+
+```{r, echo = FALSE}
+flowchart <- DiagrammeR::grViz("digraph{
+
+  graph [overlap = true, rankdir = LR]
+  
+  node [shape = rectangle, width = 2, height = 1, fontname = futura, fontsize = 16, fontcolor = white, style = filled ]  
+        
+  rec1 [label = 'Data \n Acquisition', color = steelblue1]
+  rec2 [label = 'Text \n Extraction', color = steelblue2]
+  rec3 [label =  'Document \n Filtering', color = steelblue3]
+  rec4 [label = 'Text \n Understanding', color = steelblue]
+  rec5 [label = 'Claim \n Match', color = steelblue4]
+  
+  # edge definitions with the node IDs
+  edge [arrowhead = vee];
+  rec1 -> rec2 -> rec3 -> rec4 -> rec5
+  }",
+  height = 100)
+
+flowchart
+```
+
+
+```{r, include = FALSE}
+# Save graph as a png
+flowchart = DiagrammeRsvg::export_svg(flowchart)
+flowchart = charToRaw(flowchart)
+rsvg::rsvg_png(flowchart, "flowchart.png") 
+#rsvg::rsvg_svg(flowchart, "flowchart.svg") 
+```
+
+
