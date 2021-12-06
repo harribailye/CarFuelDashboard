@@ -1,9 +1,37 @@
 # This file contains a Flow Chart Shiny App for Car Fuel Efficiency 
 # Author: Harrison Bailye
-# Date: 126/11/2021
+# Date: 26/11/2021
 
+## Load in the packages and the data 
 pacman::p_load(DiagrammeR, shiny, shinydashboard, tidyverse)
-car <- read.csv("Driving.csv")
+car <- read_csv("Driving.csv")
+
+## Clean the data 
+
+
+
+
+
+
+
+
+
+
+
+## Create a flow chart 
+diagram <-"digraph {
+  graph [overlap = true, rankdir = LR]
+  
+  node [shape = rectangle, width = 2, height = 1, fontname = futura, fontsize = 16, fontcolor = white, style = filled]  
+    rec1 [label = 'Connected \n Data Collector', color = steelblue1]
+    rec2 [label = 'Exported \n Data', color = steelblue2]
+    rec3 [label = 'Imported \n Data into R', color = steelblue3]
+    rec4 [label = 'Produced \n SummaryStatistics',color = steelblue]
+    rec5 [label = 'Produced \n Visual Plots', color = steelblue4]
+  
+  edge [arrowhead = vee];
+  rec1 -> rec2 -> rec3 -> rec4 -> rec5
+  }"
 
 # Header for UI
 header <- dashboardHeader(title = "My Car Fuel Efficiency")
@@ -21,6 +49,7 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName = "overview",
             h2("Overview of the Shiny App"),
+            
             h3("Introduction"),
             box(width = 14,
                 "Since purchasing my own car in October 2021, I have been intrigued at the fuel efficiency. 
@@ -28,26 +57,42 @@ body <- dashboardBody(
                   aim of the project was to lower the average fuel consumputon of the car by understanding the 
                   optimal way to drive it. Additionally, I wanted to investigate if the claimed average fuel
                   efficiency was accurate or not."),
+            
             h3("Car Details"), 
-            fluidRow(infoBox("Model", "2008 Subaru Impreza RX", icon = icon("car"))),
-            fluidRow(infoBox("Engine", "2.0 Litres", icon = icon("car-battery"))),
-            fluidRow(infoBox("Odometer", "178,300 km", icon = icon("tachometer-alt"))),
-            fluidRow(infoBox("Claimed Average Fuel Efficiency", "9.8 L/100km", icon = icon("gas-pump")))),
+            fluidRow(infoBox("Model", "2008 Subaru Impreza RX Hatchback", icon = icon("car")), 
+                     infoBox("Engine", "4 Cylinders, 2.0 Litres", icon = icon("car-battery")),
+                     infoBox("Drive Type", "4-Speed Automatic, AWD", icon = icon("car-side"))),
+            fluidRow(infoBox("Odometer", "178,300 km", icon = icon("tachometer-alt")), 
+                     infoBox("Claimed Average Fuel Efficiency", "8.8 L/100km", icon = icon("gas-pump")),
+                     infoBox("Safety Rating", "5 Star", icon = icon("star"))),
+      
+            h3("Data Process"),
+            box(width = 14,
+                "The data was collected using a bluetooth OBD reader device that was connected to the car.
+                After a few months of data collection, the data was exported and imported into R. From there,
+                basic summary statistics were formulated and plots were constructed. Once this EDA was done,
+                more complex predictive models were built for the data."),
+            grVizOutput('diagram', width = "100%", height = "200px")),
+    
     tabItem(tabName = "dashboard"),
     tabItem(tabName = "plots",
             fluidRow(
-              box(plotOutput("plot1", height = 250)),
-              box(
-                title = "Controls",
-                sliderInput("slider", "Number of observations:", 1, 100, 50)
-              )
+              box(title = "A Plot of Fuel Efficiency", plotOutput("hist", height = 300)),
+              box(title = "Interactive Controls", sliderInput("range", "Driving Time", min = 0, max = 100, value = 50))
    ))))
 
 ## UI
 ui <- dashboardPage(header, sidebar, body)
 
 ## Server
-server <- function(input, output, session) { }
+server <- function(input, output, session) { 
+  output$diagram <- renderGrViz({ grViz({diagram}) })
+  
+  output$hist <- renderPlot( { car %>%
+      ggplot(aes(`Fuel effciency`, `Avr. RPM`)) +
+      geom_point() + xlab("Fuel") + ylab("Fuel")
+  })
+}
 
 # Call the App
 shinyApp(ui, server)
