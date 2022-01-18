@@ -1,0 +1,100 @@
+---
+title: "Car Fuel Efficiency Cleaning"
+author: "Harrison Bailye"
+date: "08/12/2021"
+output:
+  pdf_document:
+    toc: yes
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+echo = TRUE, 
+fig.width = 10, 
+fig.asp = 0.618, 
+out.width = "70%",
+fig.align = "center", 
+root.dir = '../'
+)
+pacman::p_load(tidyverse, tidymodels, kernlab, textrecipes, skimr, doParallel, ranger, dplyr, knitr, glue, patchwork, vip, stringr)
+```
+
+## Load in the data 
+Data from my Subaru Impreza was collected using an OBD reader and was exported into a csv file. The data is exported in monthly blocks so each file needs to be imported separately and then joined to make one big data table.
+```{r, results= 'hide'}
+car_10 <- read_csv("driving_2021_10.csv")
+car_11 <- read_csv("driving_2021_11.csv")
+car_12 <- read_csv("driving_2021_12.csv")
+```
+
+## Join the Data
+We will join all the data together to create one big data table.
+```{r}
+car <- full_join(car_10, car_11)
+car <- full_join(car, car_12)
+```
+
+\newpage
+## EDA
+Before a model can be constructed, it is important to perform explanatory data analysis (EDA) to ensure that the data is clean and in the correct form and also to investigate relationships between predictors and the response variable.
+
+### EDA 01: View the data
+To begin with, we will view the data to see what needs to be fixed before working with the data. 
+```{r}
+head(car)
+```
+
+We can omit the missing data points as there are not many of them so omitting them won't have much of an impact on the results. 
+```{r}
+car <- car %>%
+  na.omit()
+```
+
+### EDA 02: Remove predictors
+We saw that there were 22 predictors in the data set, however, not all of them are useful for the purpose of the task, so we will omit these predictors from the data set.
+
+```{r}
+car <- car %>%
+  select(-c(Address, `Driving Start Time`, `Driving Finish Time`, `Max Engine Oil Temp`, 
+            `Fuel Cost`, `Speeding Normal count`, `Speeding Hard count`, 
+            `Rapid Acc. Hard Count`, `Rapid Acc. Normal Count`, `Driving Time`))
+head(car)
+```
+
+### EDA 03: Clean columns 
+We will now clean the columns, converting them into the right form and removing the units of measurement for each data point.
+
+```{r}
+# Remove units of measurement 
+car$Distance <- str_remove_all(car$Distance, "km")
+car$`Avr. Speed` <- str_remove_all(car$`Avr. Speed`, "km/h")
+car$`Max Speed` <- str_remove_all(car$`Max Speed`, "km/h")
+car$`Avr. RPM` <- str_remove_all(car$`Avr. RPM`, "rpm")
+car$`Max RPM` <- str_remove_all(car$`Max RPM`, "rpm")
+car$`Max Coolant Temp` <- str_remove_all(car$`Max Coolant Temp`, "°C")
+car$`Fuel effciency` <- str_remove_all(car$`Fuel effciency`, "L/100km")
+
+# Convert to numeric
+car$Distance <-  as.numeric(car$Distance)
+car$`Avr. Speed` <- as.numeric(car$`Avr. Speed`)
+car$`Max Speed` <- as.numeric(car$`Max Speed`)
+car$`Avr. RPM` <- as.numeric(car$`Avr. RPM`)
+car$`Max RPM` <- as.numeric(car$`Max RPM`)
+car$`Max Coolant Temp` <- as.numeric(car$`Max Coolant Temp`)
+car$`Fuel effciency` <- as.numeric(car$`Fuel effciency`)
+car$`Safe Driving Score` <- as.numeric(car$`Safe Driving Score`)
+car$`Eco Driving Score` <- as.numeric(car$`Eco Driving Score`)
+```
+## Viewing the Clean Data
+We can see the final clean data below.
+```{r}
+head(car)
+```
+
+
+# Saving the Data 
+```{r}
+filename <- glue::glue("{lubridate::today()}-driving.rds")
+saveRDS(car, filename)
+```
+
