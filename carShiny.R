@@ -5,6 +5,7 @@
 ## Load in the packages and the data 
 pacman::p_load(DiagrammeR, shiny, shinydashboard, tidyverse)
 car <- readRDS("2022-01-18-driving.rds")
+car <- car %>% filter(Distance > 1)
 
 
 ## Create a flow chart 
