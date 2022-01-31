@@ -4,7 +4,7 @@
 
 ## Load in the packages and the data 
 pacman::p_load(DiagrammeR, shiny, shinydashboard, tidyverse)
-car <- readRDS("2022-01-18-driving.rds")
+car <- read_csv("car_data.csv")
 car <- car %>% filter(Distance > 1)
 
 

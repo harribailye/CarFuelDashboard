@@ -94,7 +94,6 @@ head(car)
 
 # Saving the Data 
 ```{r}
-filename <- glue::glue("{lubridate::today()}-driving.rds")
-saveRDS(car, filename)
+write.csv(car, file = "car_data.csv")
 ```
 
